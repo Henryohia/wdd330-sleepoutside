@@ -1,3 +1,20 @@
+// ProductList.mjs
+
+import { renderListWithTemplate } from "./utils.mjs";
+
+function productCardTemplate(product) {
+    return `
+    <li class="product=card"
+        <a href="product_pages/?product=">
+            <img src="" alt="image of ">
+            <h2 class="card_brand"></h2>
+            <h3 class="card_name"></h3>
+            <p class="product-card_price">$</p>
+        </a>
+    </li>
+    `;
+}
+
 export default class ProductList {
     constructor(category, dataSource, listElement) {
         // You passed in this information to make the class as reusable as possible.
@@ -9,7 +26,14 @@ export default class ProductList {
 
     async init() {
         // the dataSource will return a Promise...so you can use await to resolve it.
-    const list = await this.dataSource.getData();
-    // next, render the list – ** future **
+        const list = await this.dataSource.getData();
+        // next, render the list – ** future **
+        this.renderList(list);
+    }
+
+    renderList(list) {
+
+
+        renderListWithTemplate(productCardTemplate, this.listElement, list);
     }
 }

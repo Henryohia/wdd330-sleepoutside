@@ -1,19 +1,4 @@
 // ProductDetails.mjs
-// Open your new file ProductDetails.mjs which located in the js directory.
-// Model the ProductDetails.mjs file similarly to the ProductData.mjs file by placing the public methods in a class.
-// The following methods are recommended:
-// constructor(): This is recommended for classes.
-// init(): There are a few things that need to happen before the class can be used. Some will happen in the constructor, automatically. Other Others need to be controlled and will be placed in this init method.
-// addProductToCart(): This is the function that is currently in product.js.
-// Move it here and note that project.js does not need to import setLocalStorage from utils.mjs anymore. This
-// renderProductDetails(): Method to generate or populate the HTML to display the product details.
-// It will be nice for the product to keep track of important information about itself. For example,
-// constructor(productId, dataSource){
-//   this.productId = productId;
-//   this.product = {};
-//   this.dataSource = dataSource;
-// }
-// With that information the product will know which id it has, it will have a source to get the information it needs when the time comes, and will have a place to store the retrieved details.
 
 import { getLocalStorage, setLocalStorage } from "./utils.mjs";
 
@@ -32,7 +17,8 @@ export default class ProductDetails {
 
     // once the HTML is rendered, add a listener to the Add to Cart button
     // Notice the .bind(this). This callback will not work if the bind(this) is missing. Review the readings from this week on 'this' to understand why.
-    document.getElementById("addToCart").addEventListener("click", this.addProductToCart.bind(this));
+    document.getElementById("addToCart")
+    .addEventListener("click", this.addProductToCart.bind(this));
   }
 
   addProductToCart() {

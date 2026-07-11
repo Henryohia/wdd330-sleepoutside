@@ -4,9 +4,9 @@ import ProductDetails from "./ProductDetails.mjs";
 import { getParam } from "./utils.mjs";
 
 const dataSource = new ProductData("tents");
-const productId = getParam("product");
+const productID = getParam("product");
 
-const product = new ProductDetails(productId, dataSource);
+const product = new ProductDetails(productID, dataSource);
 product.init();
 // console.log(dataSource.findProductById(productId));
 
