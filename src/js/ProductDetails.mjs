@@ -41,10 +41,10 @@ function productDetailsTemplate(product) {
     productImage.alt = product.NameWithoutBrand;
 
     document.getElementById("productPrice").textContent = product.FinalPrice;
-    document.getElementById("productColor").textContent = product.Colors[0].ClorName;
+    document.getElementById("productColor").textContent = product.Colors[0].ColorName;
     document.getElementById("productDesc").innerHTML = product.DescriptionHtmlSimple;
 
-    document.getElementById("addToCard").dataset.id = product.Id;
+    document.getElementById("addToCart").dataset.id = product.Id;
 }
 
 
