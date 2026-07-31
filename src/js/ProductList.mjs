@@ -3,13 +3,35 @@
 import { renderListWithTemplate } from "./utils.mjs";
 
 function productCardTemplate(product) {
+    const isDiscounted =
+    product.FinalPrice < product.SuggestedRetailPrice;
+
+    const discountPercentage = Math.round(
+        ((product.SuggestedRetailPrice - product.FinalPrice) /
+        product.SuggestedRetailPrice) * 100
+    );
     return `
     <li class="product-card"
         <a href="../product_pages/?product=${product.Id}">
+
+            ${
+            isDiscounted
+                ? `<span class="discount-badge">${discountPercentage}% OFF</span>`
+                : ""
+            }
             <img src="${product.Images.PrimaryMedium}" alt="image of ${product.Name}">
             <h2 class="product-card__brand">${product.Brand.Name}</h2>
             <h3 class="product-card__name">${product.NameWithoutBrand}</h3>
-            <p class="product-card__price">$${product.FinalPrice}</p>
+            <p class="product-card__price">
+                $${product.FinalPrice}
+
+                ${
+                    isDiscounted
+                    ? `<span class="old-price">$${product.SuggestedRetailPrice}</span>`
+                    : ""
+                }
+            </p>
+
         </a>
     </li>
     `;

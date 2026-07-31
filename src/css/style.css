@@ -243,6 +243,25 @@ button {
   color: var(--secondary-color);
 }
 
+
+.discount-badge {
+  display: inline-block;
+  background: #d32f2f;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.old-price {
+  text-decoration: line-through;
+  color: gray;
+  margin-left: 8px;
+  font-size: 0.9rem;
+}
+
 /* Start cart list card styles */
 .cart-card {
   display: grid;
