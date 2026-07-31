@@ -27,9 +27,9 @@ export function getParam(param) {
 
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
-  const product = urlParams.get('product')
+  // const product = urlParams.get('product')
 
-  return product;
+  return urlParams.get(param);
 }
 
 export function renderListWithTemplate(template, parentElement, list, position = "afterbegin", clear = false) {
@@ -38,5 +38,52 @@ export function renderListWithTemplate(template, parentElement, list, position =
   if (clear) {
     parentElement.innerHTML = "";
   }
+  parentElement.insertAdjacentHTML(position, htmlStrings.join(""));
+}
+
+export function renderListTemplate(template, parentElement, data, callback) {
+  parentElement.innerHTML = template;
+  if (callback) {
+    callback(data);
+  }
+}
+
+export async function loadTemplate(path) {
+  const res = await fetch(path);
+  const template = await res.text();
+  return template;
+}
+
+export async function loadHeaderFooter() {
+  const headerTemplate = await loadTemplate("../partials/header.html");
+  const footerTemplate = await loadTemplate("../partials/footer.html");
+
+  const headerElement = document.querySelector("#main-header");
+  const footerElement = document.querySelector("#main-footer");
+
+  renderListTemplate(headerTemplate, headerElement);
+  renderListTemplate(footerTemplate, footerElement);
+}
+
+export function renderCartWithTemplate(template, parentElement, list, position = "afterbegin", clear = false) {
+  // Make sure parentElement exists
+  if (!parentElement) {
+    // parentElement.innerHTML = "";
+    console.error("RenderCartWithTemplate: parent element not found!");
+    return;
+  }
+
+  // Make sure list is an array
+  if (!Array.isArray(list)) {
+    console.error("renderCartWithTemplate: list must be an array.");
+    return;
+  }
+
+  const htmlStrings = list.map(template);
+
+  if (clear) {
+    parentElement.innerHTML = "";
+  }
+
   parentElement.insertAdjacentHTML(position, htmlStrings.join(""));
 }
