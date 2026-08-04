@@ -300,6 +300,17 @@ button {
   grid-column: 3;
 }
 
+.cart-footer {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-top: 2px solid #ddd;
+  text-align: right;
+}
+
+.cart-total {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
 
 /* cart footer hiden */
 .hide {
