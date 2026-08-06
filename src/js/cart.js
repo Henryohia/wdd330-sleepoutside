@@ -47,6 +47,7 @@ function cartItemTemplate(item) {
 }
 
 function displayCartTotal(cartItems) {
+  // populate cart footer total
   const cartFooter = document.querySelector(".cart-footer");
   const cartTotal = document.querySelector(".cart-total");
 
@@ -62,6 +63,13 @@ function displayCartTotal(cartItems) {
     // hide the cart footer if there are no items in the cart
     cartFooter.classList.add("hide");
   }
+
+  // populate list footer (checkout link + total) and show it as well
+  const listFooter = document.querySelector('.list-footer');
+  const listTotal = document.querySelector('.list-total');
+  if (listTotal) listTotal.innerText = `Total: $${totalPrice.toFixed(2)}`;
+  if (listFooter) listFooter.classList.remove('hide');
+  
 }
 
 
