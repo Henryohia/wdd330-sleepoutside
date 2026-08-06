@@ -19,17 +19,13 @@ function formDataToJSON(formElement) {
 function packageItems(items) {
   // convert the list of products from localStorage to the simpler form required for the checkout process.
   // An Array.map would be perfect for this process.
-  const simplifiedItems = items.map((item) => {
-    console.log(item);
-    return {
-      id: item.Id,
-      price: item.FinalPrice,
-      name: item.Name,
-      quantity: 1,
-    };
-  });
-  return simplifiedItems;
-        
+  if (!Array.isArray(items)) return [];
+  return items.map((item) => ({
+    id: item.Id || item.id || '',
+    name: item.Name || item.name || '',
+    price: parseFloat(item.FinalPrice || item.price || 0) || 0,
+    quantity: 1
+  }));       
 }
 
 export default class CheckoutProcess {
@@ -58,21 +54,17 @@ export default class CheckoutProcess {
     );
     itemNumElement.innerText = this.list.length;
     // calculate the total of all the items in the cart
-    const amounts = this.list.map((item) => item.FinalPrice);
-    this.itemTotal = amounts.reduce((sum, item) => sum + item);
-    summaryElement.innerText = `$${this.itemTotal}`;;
-    
+    const amounts = this.list.map((item) => parseFloat(item.FinalPrice || item.price || 0) || 0);
+    this.itemTotal = amounts.reduce((sum, item) => sum + item, 0);
+
+    if (summaryElement) summaryElement.innerText = `$${this.itemTotal.toFixed(2)}`;
   }
 
   calculateOrderTotal() {
     // calculate the tax and shipping amounts. Add those to the cart total to figure out the order total
-    this.tax = (this.itemTotal * .06);
-    this.shipping = 10 + (this.list.length * 2);
-    this.orderTotal = (
-        parseFloat(this.itemTotal) +
-        parseFloat(this.tax) +
-        parseFloat(this.shipping)
-    ) 
+    this.tax = this.itemTotal * 0.06;
+    this.shipping = this.list.length === 0 ? 0 : 10 + (Math.max(0, this.list.length - 1) * 2);
+    this.orderTotal = parseFloat(this.itemTotal) + parseFloat(this.tax) + parseFloat(this.shipping);
 
     // display the totals.
     this.displayOrderTotals();
@@ -94,24 +86,63 @@ export default class CheckoutProcess {
   // convert the form data to a JSON order object using the formDataToJSON function
   // populate the JSON order object with the order Date, orderTotal, tax, shipping, and list of items
   // call the checkout method in the ExternalServices module and send it the JSON order data.
-  const formElement = document.forms["checkout"];
-    const order = formDataToJSON(formElement);
+  const taxEl = document.querySelector(`${this.outputSelector} #tax`);
+    const shippingEl = document.querySelector(`${this.outputSelector} #shipping`);
+    const orderTotalEl = document.querySelector(`${this.outputSelector} #orderTotal`);
 
+    if (taxEl) taxEl.innerText = `$${this.tax.toFixed(2)}`;
+    if (shippingEl) shippingEl.innerText = `$${this.shipping.toFixed(2)}`;
+    if (orderTotalEl) orderTotalEl.innerText = `$${this.orderTotal.toFixed(2)}`;
+  }
+
+  // called when form submits
+  async checkout(formElement) {
+    const form = typeof formElement === 'string' ? document.forms[formElement] : formElement;
+    if (!form) throw new Error('Checkout form not found');
+
+    const order = formDataToJSON(form);
+
+    // required keys per server spec
     order.orderDate = new Date().toISOString();
-    order.orderTotal = this.orderTotal;
-    order.tax = this.tax;
-    order.shipping = this.shipping;
     order.items = packageItems(this.list);
-    //console.log(order);
+    order.orderTotal = this.orderTotal.toFixed(2);
+    order.tax = this.tax.toFixed(2);
+    order.shipping = this.shipping;
 
-    try {
-      const response = await services.checkout(order);
-      console.log(response);
-    } catch (err) {
-      console.log(err);
-    }
+    // send to server
+    const response = await services.checkout(order);
+    return response;
   }
 }
 
 
+const cp = new CheckoutProcess('so-cart', '.checkout-summary');
+      cp.init();
 
+      // recalc totals when zip changes
+      const zipInput = document.querySelector('#zip');
+      if (zipInput) {
+        zipInput.addEventListener('change', () => cp.calculateOrderTotal());
+        zipInput.addEventListener('blur', () => cp.calculateOrderTotal());
+      }
+
+      // also calculate immediately so tax/shipping show after init
+      cp.calculateOrderTotal();
+
+      const form = document.querySelector('#checkout');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          // HTML required attributes will prevent submit if fields empty
+          const msg = document.querySelector('#checkout-message');
+          try {
+            const resp = await cp.checkout(form);
+            msg.innerText = 'Order submitted successfully. Order id: ' + (resp && resp.orderId ? resp.orderId : JSON.stringify(resp));
+            // Optionally clear cart
+            // localStorage.removeItem('so-cart');
+          } catch (err) {
+            console.error(err);
+            msg.innerText = 'Order failed: ' + err.message;
+          }
+        });
+      }
