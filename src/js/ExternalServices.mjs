@@ -9,7 +9,8 @@ function convertToJson(res) {
 }
 
 export default class ExternalServices {
-  constructor() {
+  constructor(url = 'https://wdd330-backend.onrender.com/checkout') {
+    this.url = url;
     // this.category = category;
     // this.path = `../json/${this.category}.json`;
 
@@ -39,7 +40,16 @@ export default class ExternalServices {
       body: JSON.stringify(payload),
     };
     return await fetch(`${baseURL}checkout/`, options).then(convertToJson);
-  }
+
+    const res = await fetch(this.url, options);
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Checkout failed: ${res.status} ${text}`);
+      }
+
+      return res.json();
+    }
+
 }
 
 

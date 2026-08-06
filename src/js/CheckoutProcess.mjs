@@ -28,8 +28,7 @@ function packageItems(items) {
       quantity: 1,
     };
   });
-  return simplifiedItems;
-        
+  return simplifiedItems;     
 }
 
 export default class CheckoutProcess {
@@ -60,19 +59,18 @@ export default class CheckoutProcess {
     // calculate the total of all the items in the cart
     const amounts = this.list.map((item) => item.FinalPrice);
     this.itemTotal = amounts.reduce((sum, item) => sum + item);
-    summaryElement.innerText = `$${this.itemTotal}`;;
-    
+    summaryElement.innerText = `$${this.itemTotal}`;
   }
 
   calculateOrderTotal() {
     // calculate the tax and shipping amounts. Add those to the cart total to figure out the order total
     this.tax = (this.itemTotal * .06);
-    this.shipping = 10 + (this.list.length * 2);
+    this.shipping = 10 + (this.list.length - 1) * 2;
     this.orderTotal = (
-        parseFloat(this.itemTotal) +
-        parseFloat(this.tax) +
-        parseFloat(this.shipping)
-    ) 
+      parseFloat(this.itemTotal) +
+      parseFloat(this.tax) +
+      parseFloat(this.shipping)
+    ).toFixed(2);
 
     // display the totals.
     this.displayOrderTotals();
@@ -89,24 +87,56 @@ export default class CheckoutProcess {
     orderTotal.innerText = `$${this.orderTotal.toFixed(2)}`;
   }
 
-  async checkout(form) {
-  // get the form element data by the form name
-  // convert the form data to a JSON order object using the formDataToJSON function
-  // populate the JSON order object with the order Date, orderTotal, tax, shipping, and list of items
-  // call the checkout method in the ExternalServices module and send it the JSON order data.
-  const formElement = document.forms["checkout"];
-    const order = formDataToJSON(formElement);
+//   async checkout(form) {
+//   // get the form element data by the form name
+//   // convert the form data to a JSON order object using the formDataToJSON function
+//   // populate the JSON order object with the order Date, orderTotal, tax, shipping, and list of items
+//   // call the checkout method in the ExternalServices module and send it the JSON order data.
+//   const formElement = document.forms["checkout"];
+//     const order = formDataToJSON(formElement);
 
+//     order.orderDate = new Date().toISOString();
+//     order.orderTotal = this.orderTotal;
+//     order.tax = this.tax;
+//     order.shipping = this.shipping;
+//     order.items = packageItems(this.list);
+//     //console.log(order);
+
+//     // takes a form element and returns an object where the key is the "name" of the form input.
+//     function formDataToJSON(formElement) {
+//     const formData = new FormData(formElement),
+//         convertedJSON = {};
+
+//     formData.forEach(function (value, key) {
+//         convertedJSON[key] = value;
+//     });
+
+//     return convertedJSON;
+//     }
+//   }
+
+  // called when form submits
+  async checkout(formElement) {
+    const form = typeof formElement === 'string' ? document.forms[formElement] : formElement;
+    if (!form) throw new Error('Checkout form not found');
+
+    const order = formDataToJSON(form);
+
+    // required keys per server spec
     order.orderDate = new Date().toISOString();
-    order.orderTotal = this.orderTotal;
-    order.tax = this.tax;
-    order.shipping = this.shipping;
     order.items = packageItems(this.list);
-    //console.log(order);
+    order.orderTotal = this.orderTotal.toFixed(2);
+    order.tax = this.tax.toFixed(2);
+    order.shipping = this.shipping;
+
+    // send to server
+    // const response = await services.checkout(order);
+    
 
     try {
       const response = await services.checkout(order);
       console.log(response);
+      return response;
     } catch (err) {
       console.log(err);
     }
@@ -114,4 +144,33 @@ export default class CheckoutProcess {
 }
 
 
+// const cp = new CheckoutProcess('so-cart', '.checkout-summary');
+//       cp.init();
 
+//       // recalc totals when zip changes
+//       const zipInput = document.querySelector('#zip');
+//       if (zipInput) {
+//         zipInput.addEventListener('change', () => cp.calculateOrderTotal());
+//         zipInput.addEventListener('blur', () => cp.calculateOrderTotal());
+//       }
+
+//       // also calculate immediately so tax/shipping show after init
+//       cp.calculateOrderTotal();
+
+//       const form = document.querySelector('#checkout');
+//       if (form) {
+//         form.addEventListener('submit', async (e) => {
+//           e.preventDefault();
+//           // HTML required attributes will prevent submit if fields empty
+//           const msg = document.querySelector('#checkout-message');
+//           try {
+//             const resp = await cp.checkout(form);
+//             msg.innerText = 'Order submitted successfully. Order id: ' + (resp && resp.orderId ? resp.orderId : JSON.stringify(resp));
+//             // Optionally clear cart
+//             // localStorage.removeItem('so-cart');
+//           } catch (err) {
+//             console.error(err);
+//             msg.innerText = 'Order failed: ' + err.message;
+//           }
+//         });
+//       }
